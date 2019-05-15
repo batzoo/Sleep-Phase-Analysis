@@ -32,7 +32,7 @@ def build_model():
 	model.add(layers.Dense(100))
 	model.add(layers.Dense(50))
 	model.add(layers.Dense(30))
-	model.add(layers.Dense(5))
+	model.add(layers.Dense(1))
 
 	optimizer=keras.optimizers.RMSprop(0.001)
 
@@ -43,25 +43,27 @@ def build_model():
 
 signal = raw_data_EDF[signal_index]
 data = create_signal_label_arrays(signal,200,hypnogram)
-
+training_data=[]
+training_label=[]
+test_data=[]
+test_label=[]
 print(data[2][0])
+for i in range(700):
+	training_data.append(data[i][0])
+	training_label.append(data[i][1])
 
-training_data=data[0][:700]
-training_label=data[1][:700]
-print("DATA" ,training_data[0])
-print("LABEL" ,training_label[1])
-test_data=data[701:][0]
-test_label=data[701:][1]
 
+training_data=np.asarray(training_data)
+training_label=np.asarray(training_label)
+print(training_data.shape)
+
+
+print("DATA" ,training_data)
+
+print("LABEL" ,training_label)
 
 model=build_model()
 
 model.summary()
 
-model.fit(training_data,
-                    training_label,
-                    epochs=40,
-                    batch_size=512,
-                    validation_data=(test_data, test_label),
-                    verbose=0)
-
+model.fit(training_data, training_label, epochs=40 ,verbose=1)
