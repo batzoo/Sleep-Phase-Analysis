@@ -84,7 +84,7 @@ def spectrumCalculation(signal,samplingFrequency=200):
     #Frequency calculation
     frequency = np.arange(-samplingFrequency/2,samplingFrequency/2,samplingFrequency/Nfft) #All the frequency dots
 
-    return np.array([spectrum,frequency])
+    return spectrum
 
 def spectrumCalculation_signalunique(signal,samplingFrequency=200):
     """
