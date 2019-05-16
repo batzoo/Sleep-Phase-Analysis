@@ -13,26 +13,14 @@ from tensorflow.keras import layers
 
 name_signaux_interessants = ['FP1-A2','CZ-A1','O1-A2','FP2-A1','O2-A1','CZ2-A1','EMG1','EMG2','EMG3','EOG1','EOG2']
 
-subject = 1 
-signal_index = 1 #indice signal voulu
-database_folder = '..\\..\\Pologne\\Dataset\\'
+NUMBER_OF_EPOCHS=50
 
-pathEDF = database_folder+'subject'+str(subject)+'.edf'
-pathHypnogram = database_folder+'HypnogramAASM_subject'+str(subject)+'.txt'
-
-raw_data_EDF = edfDataExtraction_interestingSignals(pathEDF)
-
-raw_hypnogram = hypnogramDataExtraction(pathHypnogram)
-
-hypnogram = split_hypnogram(raw_hypnogram,5)
 
 def build_model():
 	model=keras.Sequential()
-	model.add(layers.Dense(100,input_dim=6000))
+	model.add(layers.Dense(1000,input_dim=6000))
 	model.add(layers.Activation('relu'))
-	model.add(layers.Dense(60))
-	model.add(layers.Activation('relu'))
-	model.add(layers.Dense(30))
+	model.add(layers.Dense(3000))
 	model.add(layers.Activation('relu'))
 	model.add(layers.Dense(1))
 
@@ -48,14 +36,15 @@ def load_model_ez():
 
 
 def save_model(model):
-	model.save("my_model.h5")
+	model.save("my_model2.h5")
 
 def train_model(model,training_data,training_label):
-	model.fit(training_data, training_label, epochs=350 ,verbose=1)
+	global NUMBER_OF_EPOCHS
+	model.fit(training_data, training_label, epochs=NUMBER_OF_EPOCHS ,verbose=1)
 	save_model(model)	
 
-def master():
 
+def prepareData():
 	data=load_data("FP1-A2")
 	training_data=[]
 	training_label=[]
@@ -74,14 +63,17 @@ def master():
 	training_label=np.asarray(training_label)
 	test_data=np.asarray(test_data)
 	test_label=np.asarray(test_label)
-	
-	print("DATA" ,training_data)
-	
-	print("LABEL" ,training_label)
+	return training_data,training_label,test_data,test_label
+def master():
+	global NUMBER_OF_EPOCHS
+	ctr=0
+	ctr2=0
+	training_data,training_label,test_data,test_label=prepareData()
 
 
 	print("Nouveau ou ancien modele : (O)ld/(N)ew ")
 	enter=input()
+
 	if(enter=='O'):
 		model=load_model_ez()
 	elif(enter=='N'):
@@ -89,15 +81,18 @@ def master():
 	else:
 		print("O ou N")
 		return
+
+
 	print("Train ? (O)ui/(N)on")
 	enter2=input()
+
 	if(enter2=='O'):
+		NUMBER_OF_EPOCHS=int(input("Number of Epochs :"))
 		train_model(model,training_data,training_label)
-	ctr=0
-	ctr2=0
+	
 	predictions=model.predict(test_data)
-	for z in range(len(predictions)):
-		if(round(predictions[z][0])==test_label[z]):
+	for i in range(len(predictions)):
+		if(round(predictions[i][0])==test_label[i]):
 			ctr+=1
 		else:
 			ctr2+=1
