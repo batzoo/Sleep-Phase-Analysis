@@ -17,9 +17,4 @@ hypnogram = split_hypnogram(raw_hypnogram)
 
 signal = raw_data_EDF[signal_index]
 
-data = create_signal_label_arrays(signal,hypnogram)
-
-print(data[0])
-
-for i in range (100):
-	print(np.shape(data[i][0]),data[i][0],data[i][1])
+print(create_signal_label_arrays(signal,hypnogram))

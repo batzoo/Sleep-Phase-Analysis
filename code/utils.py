@@ -8,8 +8,8 @@ from scipy import signal as spsig
 
 SIGNAL_LABELS = ['ECG', 'FP1-A2', 'CZ-A1', 'EMG1', 'EOG1', 'VTH', 'VAB', 'NAF2P-A1', 'NAF1', 'PHONO', 'PR', 'SAO2', 'PCPAP', 'POS', 'EOG2', 'O1-A2', 'FP2-A1', 'O2-A1', 'CZ2-A1', 'EMG2', 'PULSE', 'VTOT', 'EMG3']
 INTERESTING_SIGNALS_LABELS = ['FP1-A2','CZ-A1','O1-A2','FP2-A1','O2-A1','CZ2-A1','EMG1','EMG2','EMG3','EOG1','EOG2']
-DATABASE_FOLDER = '..\\..\\Pologne\\Dataset\\'
-NUMPY_FILES_FOLDER = '..\\..\\Pologne\\NewDataset\\'
+DATABASE_FOLDER = '..\\..\\Dataset\\'
+NUMPY_FILES_FOLDER = '..\\..\\numpy_files\\'
 
 def partialSum(signal, index, gap):
     """
@@ -79,6 +79,23 @@ def spectrumCalculation(signal,samplingFrequency=200):
     
     #Spectrum calculation
     S = spfft.fft(signal[0], n=Nfft)
+    spectrum = abs(spfft.fftshift(S))
+        
+    #Frequency calculation
+    frequency = np.arange(-samplingFrequency/2,samplingFrequency/2,samplingFrequency/Nfft) #All the frequency dots
+
+    return np.array([spectrum,frequency])
+
+def spectrumCalculation_signalunique(signal,samplingFrequency=200):
+    """
+    Input:  - signal
+    
+    Output: - Return a list which is [[spectrumList],[frequencyList]]
+    """
+    Nfft = len(signal) #Number of dots for the fft
+    
+    #Spectrum calculation
+    S = spfft.fft(signal, n=Nfft)
     spectrum = abs(spfft.fftshift(S))
         
     #Frequency calculation
@@ -188,8 +205,30 @@ def edfDataExtraction_interestingSignals(filePath, signals_index = [1,2,15,16,17
     for i in range (n):
         signal_buffer[i, :] = fileEDF.readSignal(signals_index[i])
         
-    #Display some information about the buffer
-    print("Signals buffer:\n   Size line =",len(signal_buffer),"\n   Size column =",len(signal_buffer[0]))
+    fileEDF._close() #Closing the EDF file
+    return signal_buffer
+
+def edfDataExtraction_interestingSignals_unique(filePath, signal_index):
+    """
+    Input:  - filePath
+    
+    Output: - Return a buffer (a matrix) with all the signals inside
+    """
+    
+    
+    fileEDF = pyedflib.EdfReader(filePath) #Openning the EDF file
+
+    signal_buffer = np.zeros((1,fileEDF.getNSamples()[0]))
+    
+    signal_labels = fileEDF.getSignalLabels()
+    #Display some information about the edf file
+    # print("Number of signals: ",len(signals_index))
+    # print("\nSignals labels: ",signal_labels)
+
+    
+    #Storing the data in a buffer
+    
+    signal_buffer = fileEDF.readSignal(signal_index)
 
     fileEDF._close() #Closing the EDF file
     return signal_buffer
@@ -209,11 +248,19 @@ def hypnogramDataExtraction(filePath):
 
 def splitSignal(interval,signal):
     splittedSignal=np.zeros((int(len(signal)/(interval*200)),2,interval*200))
-    print("splitted",splittedSignal.shape,"oui",splittedSignal[0])
+    # print("splitted",splittedSignal.shape,"oui",splittedSignal[0])
     for i in range(int(len(signal)/(interval*200))):
         for j in range(interval*200):
             splittedSignal[i][0][j]=signal[i*interval*200+j]
             splittedSignal[i][1][j]=j/200
+    return splittedSignal
+
+def splitSignal_notime(interval,signal):
+    splittedSignal=np.zeros((int(len(signal)/(interval*200)),interval*200))
+    # print("splitted",splittedSignal.shape,"oui",splittedSignal[0])
+    for i in range(int(len(signal)/(interval*200))):
+        for j in range(interval*200):
+            splittedSignal[i][j]=signal[i*interval*200+j]
     return splittedSignal
 
 def split_hypnogram(hypno,interval = 5):
@@ -226,10 +273,8 @@ def split_hypnogram(hypno,interval = 5):
         hypno_30s.append(mean.astype(np.int))
     return hypno_30s
 
-def create_signal_label_arrays(signal,hypno,frequency=200):  ##signal : tableau, frequency : int
-    n = len(hypno)
+def create_signal_label_arrays(signals,hypno):
     data=[]
-    signal = signal[0]
-    for i in range (n):
-        data.append([signal[i*frequency * 30 : (i+1)*frequency*30],hypno[i]])
+    for i in range(len(signals)):
+        data.extend([signals[i],hypno[i]])
     return data

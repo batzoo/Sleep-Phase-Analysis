@@ -20,20 +20,18 @@ database_folder = '..\\..\\Pologne\\Dataset\\'
 pathEDF = database_folder+'subject'+str(subject)+'.edf'
 pathHypnogram = database_folder+'HypnogramAASM_subject'+str(subject)+'.txt'
 
-raw_data_EDF = edfDataExtraction_interestingSignals(pathEDF)
+# raw_data_EDF = edfDataExtraction_interestingSignals(pathEDF)
 
-raw_hypnogram = hypnogramDataExtraction(pathHypnogram)
+# raw_hypnogram = hypnogramDataExtraction(pathHypnogram)
 
-hypnogram = split_hypnogram(raw_hypnogram,5)
+# hypnogram = split_hypnogram(raw_hypnogram,5)
 
 def build_model():
 	model=keras.Sequential()
 	model.add(layers.Dense(100,input_dim=6000))
-	model.add(layers.Activation('relu'))
-	model.add(layers.Dense(60))
-	model.add(layers.Activation('relu'))
-	model.add(layers.Dense(30))
-	model.add(layers.Activation('relu'))
+	model.add(layers.Activation('tanh'))
+	model.add(layers.Dense(200))
+	model.add(layers.Activation('tanh'))
 	model.add(layers.Dense(1))
 
 	optimizer=keras.optimizers.RMSprop(0.001)
@@ -56,7 +54,7 @@ def train_model(model,training_data,training_label):
 
 def master():
 
-	data=load_data("FP1-A2")
+	data=load_data("CZ-A1")
 	training_data=[]
 	training_label=[]
 	test_data=[]
