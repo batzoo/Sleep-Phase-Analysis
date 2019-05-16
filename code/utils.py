@@ -5,6 +5,12 @@ import matplotlib.pyplot as plt
 from scipy import fftpack as spfft
 from scipy import signal as spsig
 
+
+SIGNAL_LABELS = ['ECG', 'FP1-A2', 'CZ-A1', 'EMG1', 'EOG1', 'VTH', 'VAB', 'NAF2P-A1', 'NAF1', 'PHONO', 'PR', 'SAO2', 'PCPAP', 'POS', 'EOG2', 'O1-A2', 'FP2-A1', 'O2-A1', 'CZ2-A1', 'EMG2', 'PULSE', 'VTOT', 'EMG3']
+INTERESTING_SIGNALS_LABELS = ['FP1-A2','CZ-A1','O1-A2','FP2-A1','O2-A1','CZ2-A1','EMG1','EMG2','EMG3','EOG1','EOG2']
+DATABASE_FOLDER = '..\\..\\Dataset\\'
+NUMPY_FILES_FOLDER = '..\\..\\numpy_files\\'
+
 def partialSum(signal, index, gap):
     """
     Input:  - signal (table with the data of the signal)
@@ -159,28 +165,28 @@ def edfDataExtraction(filePath):
     fileEDF._close() #Closing the EDF file
     return signal_buffer
 
-def edfDataExtraction_interestingSignals(filePath):
+def edfDataExtraction_interestingSignals(filePath, signals_index = [1,2,15,16,17,18,3,19,22,4,14]):
     """
     Input:  - filePath
     
     Output: - Return a buffer (a matrix) with all the signals inside
     """
-    ind_signaux_interessants = [1,2,15,16,17,18,3,19,22,4,14]
-    name_signaux_interessants = ['FP1-A2','CZ-A1','O1-A2','FP2-A1','O2-A1','CZ2-A1','EMG1','EMG2','EMG3','EOG1','EOG2']
+    
     
     fileEDF = pyedflib.EdfReader(filePath) #Openning the EDF file
-    n=len(ind_signaux_interessants)
+    n=len(signals_index)
 
     signal_buffer = np.zeros((n,fileEDF.getNSamples()[0]))
-    
-    #Display some information about the edf file
-    print("Number of signals: ",len(ind_signaux_interessants))
-    print("\nSignals labels: ",name_signaux_interessants)
-    
+	
+    signal_labels = fileEDF.getSignalLabels()
+	#Display some information about the edf file
+	# print("Number of signals: ",len(signals_index))
+	# print("\nSignals labels: ",signal_labels)
 
-    #Storing the data in a buffer
+	
+	#Storing the data in a buffer
     for i in range (n):
-        signal_buffer[i, :] = fileEDF.readSignal(ind_signaux_interessants[i])
+        signal_buffer[i, :] = fileEDF.readSignal(signals_index[i])
         
     #Display some information about the buffer
     print("Signals buffer:\n   Size line =",len(signal_buffer),"\n   Size column =",len(signal_buffer[0]))
@@ -210,7 +216,7 @@ def splitSignal(interval,signal):
             splittedSignal[i][1][j]=j/200
     return splittedSignal
 
-def split_hypnogram(hypno,interval):
+def split_hypnogram(hypno,interval = 5):
     hypno_30s = []
     n = (int)(30 / interval)
     for i in range (0,len(hypno)-1,n):
@@ -220,9 +226,10 @@ def split_hypnogram(hypno,interval):
         hypno_30s.append(mean.astype(np.int))
     return hypno_30s
 
-def create_signal_label_arrays(signal,frequency,hypno):  ##signal : tableau, frequency : int
-    data = []
+def create_signal_label_arrays(signal,hypno,frequency=200):  ##signal : tableau, frequency : int
     n = len(hypno)
+    data=[]
+    signal = signal[0]
     for i in range (n):
         data.append([signal[i*frequency * 30 : (i+1)*frequency*30],hypno[i]])
     return data
