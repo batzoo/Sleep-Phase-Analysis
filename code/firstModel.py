@@ -14,13 +14,13 @@ from tensorflow.keras import layers
 name_signaux_interessants = ['FP1-A2','CZ-A1','O1-A2','FP2-A1','O2-A1','CZ2-A1','EMG1','EMG2','EMG3','EOG1','EOG2']
 
 NUMBER_OF_EPOCHS=50
-
+model_number=""
 
 def build_model():
 	model=keras.Sequential()
-	model.add(layers.Dense(1000,input_dim=6000))
+	model.add(layers.Dense(30,input_dim=6000))
 	model.add(layers.Activation('relu'))
-	model.add(layers.Dense(3000))
+	model.add(layers.Dense(375))
 	model.add(layers.Activation('relu'))
 	model.add(layers.Dense(1))
 
@@ -31,12 +31,17 @@ def build_model():
                    metrics=['binary_accuracy'])
 	return model
 def load_model_ez():
-	loaded_model=keras.models.load_model("my_model.h5")
+	global model_number
+	model_number=input("Entrer le numéro du modèle : ")
+	loaded_model=keras.models.load_model("..\\..\\Pologne\\Models\\my_model",str(model_number),".h5")
 	return loaded_model
 
 
 def save_model(model):
-	model.save("my_model2.h5")
+	global model_number
+	if(model_number==""):
+		model.save("..\\..\\Pologne\\Models\\my_model4.h5")
+	print("Saved as my_model2")
 
 def train_model(model,training_data,training_label):
 	global NUMBER_OF_EPOCHS
