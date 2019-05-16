@@ -8,8 +8,8 @@ from scipy import signal as spsig
 
 SIGNAL_LABELS = ['ECG', 'FP1-A2', 'CZ-A1', 'EMG1', 'EOG1', 'VTH', 'VAB', 'NAF2P-A1', 'NAF1', 'PHONO', 'PR', 'SAO2', 'PCPAP', 'POS', 'EOG2', 'O1-A2', 'FP2-A1', 'O2-A1', 'CZ2-A1', 'EMG2', 'PULSE', 'VTOT', 'EMG3']
 INTERESTING_SIGNALS_LABELS = ['FP1-A2','CZ-A1','O1-A2','FP2-A1','O2-A1','CZ2-A1','EMG1','EMG2','EMG3','EOG1','EOG2']
-DATABASE_FOLDER = '..\\..\\Dataset\\'
-NUMPY_FILES_FOLDER = '..\\..\\numpy_files\\'
+DATABASE_FOLDER = '..\\..\\Pologne\\Dataset\\'
+NUMPY_FILES_FOLDER = '..\\..\\Pologne\\NewDataset\\'
 
 def partialSum(signal, index, gap):
     """

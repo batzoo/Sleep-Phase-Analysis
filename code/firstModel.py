@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 from utils import *
+from database_extraction import *
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
@@ -28,9 +29,9 @@ hypnogram = split_hypnogram(raw_hypnogram,5)
 def build_model():
 	model=keras.Sequential()
 	model.add(layers.Dense(100,input_dim=6000))
-	model.add(layers.Activation('tanh'))
+	model.add(layers.Activation('relu'))
 	model.add(layers.Dense(60))
-	model.add(layers.Activation('sigmoid'))
+	model.add(layers.Activation('relu'))
 	model.add(layers.Dense(30))
 	model.add(layers.Activation('relu'))
 	model.add(layers.Dense(1))
@@ -54,18 +55,18 @@ def train_model(model,training_data,training_label):
 	save_model(model)	
 
 def master():
-	signal = raw_data_EDF[signal_index]
-	data = create_signal_label_arrays(signal,200,hypnogram)
+
+	data=load_data("FP1-A2")
 	training_data=[]
 	training_label=[]
 	test_data=[]
 	test_label=[]
-	print(data[2][0])
-	for i in range(700):
+	print(len(data))
+	for i in range(16000):
 		training_data.append(data[i][0])
 		training_label.append(data[i][1])
 	
-	for j in range(701,len(data)):
+	for j in range(16001,len(data)):
 		test_data.append(data[j][0])
 		test_label.append(data[j][1])
 	
