@@ -27,43 +27,119 @@ hypnogram = split_hypnogram(raw_hypnogram,5)
 
 def build_model():
 	model=keras.Sequential()
-	model.add(layers.Dense(300,input_dim=6000))
-	model.add(layers.Dense(200))
-	model.add(layers.Dense(100))
-	model.add(layers.Dense(50))
+	model.add(layers.Dense(100,input_dim=6000))
+	model.add(layers.Activation('tanh'))
+	model.add(layers.Dense(60))
+	model.add(layers.Activation('sigmoid'))
 	model.add(layers.Dense(30))
+	model.add(layers.Activation('relu'))
 	model.add(layers.Dense(1))
 
 	optimizer=keras.optimizers.RMSprop(0.001)
 
-	model.compile(loss='mean_squared_error',
+	model.compile(loss='mean_absolute_error',
                    optimizer=optimizer,
-                   metrics=['mean_absolute_error', 'mean_squared_error'])
+                   metrics=['binary_accuracy'])
 	return model
-
-signal = raw_data_EDF[signal_index]
-data = create_signal_label_arrays(signal,200,hypnogram)
-training_data=[]
-training_label=[]
-test_data=[]
-test_label=[]
-print(data[2][0])
-for i in range(700):
-	training_data.append(data[i][0])
-	training_label.append(data[i][1])
+def load_model_ez():
+	loaded_model=keras.models.load_model("my_model.h5")
+	return loaded_model
 
 
-training_data=np.asarray(training_data)
-training_label=np.asarray(training_label)
-print(training_data.shape)
+def save_model(model):
+	model.save("my_model.h5")
+
+def train_model(model,training_data,training_label):
+	model.fit(training_data, training_label, epochs=350 ,verbose=1)
+	save_model(model)	
+
+def master():
+	signal = raw_data_EDF[signal_index]
+	data = create_signal_label_arrays(signal,200,hypnogram)
+	training_data=[]
+	training_label=[]
+	test_data=[]
+	test_label=[]
+	print(data[2][0])
+	for i in range(700):
+		training_data.append(data[i][0])
+		training_label.append(data[i][1])
+	
+	for j in range(701,len(data)):
+		test_data.append(data[j][0])
+		test_label.append(data[j][1])
+	
+	training_data=np.asarray(training_data)
+	training_label=np.asarray(training_label)
+	test_data=np.asarray(test_data)
+	test_label=np.asarray(test_label)
+	
+	print("DATA" ,training_data)
+	
+	print("LABEL" ,training_label)
 
 
-print("DATA" ,training_data)
+	print("Nouveau ou ancien modele : (O)ld/(N)ew ")
+	enter=input()
+	if(enter=='O'):
+		model=load_model_ez()
+	elif(enter=='N'):
+		model=build_model()
+	else:
+		print("O ou N")
+		return
+	print("Train ? (O)ui/(N)on")
+	enter2=input()
+	if(enter2=='O'):
+		train_model(model,training_data,training_label)
+	ctr=0
+	ctr2=0
+	predictions=model.predict(test_data)
+	for z in range(len(predictions)):
+		if(round(predictions[z][0])==test_label[z]):
+			ctr+=1
+		else:
+			ctr2+=1
+	print("TRUE : ",ctr,"FALSE : ",ctr2)	
 
-print("LABEL" ,training_label)
+master()
 
-model=build_model()
 
-model.summary()
-
-model.fit(training_data, training_label, epochs=40 ,verbose=1)
+#signal = raw_data_EDF[signal_index]
+#data = create_signal_label_arrays(signal,200,hypnogram)
+#training_data=[]
+#training_label=[]
+#test_data=[]
+#test_label=[]
+#print(data[2][0])
+#for i in range(700):
+#	training_data.append(data[i][0])
+#	training_label.append(data[i][1])
+#
+#for j in range(701,len(data)):
+#	test_data.append(data[j][0])
+#	test_label.append(data[j][1])
+#
+#training_data=np.asarray(training_data)
+#training_label=np.asarray(training_label)
+#test_data=np.asarray(test_data)
+#test_label=np.asarray(test_label)
+#
+#print("DATA" ,training_data)
+#
+#print("LABEL" ,training_label)
+#
+#
+#model=load_model_ez()
+#
+#
+#print(test_data[0])
+#ctr=0
+#ctr2=0
+#predictions=model.predict(test_data)
+#for z in range(len(predictions)):
+#	if(round(predictions[z][0])==test_label[z]):
+#		ctr+=1
+#	else:
+#		ctr2+=1
+#print("TRUE : ",ctr,"FALSE : ",ctr2)
