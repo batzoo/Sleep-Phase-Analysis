@@ -47,7 +47,7 @@ def signalSmoother(signal, gap):
     signalPrime=signal[:]
     for k in range(gap,len(signal)-gap):
         signalPrime[k]=partialAverage(signal, k, gap)
-    return np.asarray(signalPrime)
+    return signalPrime
 
 def signalIntervalExtractionFromBuffer(buffer,signalIndex=0,intervalMin=0,intervalMax=100,samplingFrequency=200):
     """
@@ -86,7 +86,7 @@ def spectrumCalculation(signal,samplingFrequency=200):
 
     return np.array([spectrum,frequency])
 
-def spectrumCalculation_signalunique(signal,samplingFrequency=200):
+def spectrumCalculation_notime(signal,samplingFrequency=200):
     """
     Input:  - signal
     
@@ -101,7 +101,7 @@ def spectrumCalculation_signalunique(signal,samplingFrequency=200):
     #Frequency calculation
     frequency = np.arange(-samplingFrequency/2,samplingFrequency/2,samplingFrequency/Nfft) #All the frequency dots
 
-    return np.array([spectrum,frequency])
+    return spectrum
 
 def displaySignal(signal):
     #Diplay the signal
@@ -276,5 +276,5 @@ def split_hypnogram(hypno,interval = 5):
 def create_signal_label_arrays(signals,hypno):
     data=[]
     for i in range(len(signals)):
-        data.extend([signals[i],hypno[i]])
+        data.append([signals[i],hypno[i]])
     return data
