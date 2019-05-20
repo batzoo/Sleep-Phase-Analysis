@@ -18,7 +18,7 @@ model_number=""
 
 def build_model():
 	model=keras.Sequential()
-	model.add(layers.Dense(30,input_dim=6000))
+	model.add(layers.Dense(30,input_dim=750))
 	model.add(layers.Activation('relu'))
 	model.add(layers.Dense(375))
 	model.add(layers.Activation('relu'))
@@ -33,7 +33,8 @@ def build_model():
 def load_model_ez():
 	global model_number
 	model_number=input("Entrer le numéro du modèle : ")
-	loaded_model=keras.models.load_model("..\\..\\Pologne\\Models\\my_model",str(model_number),".h5")
+	print("my_model"+str(model_number)+".h5")
+	loaded_model=keras.models.load_model("..\\..\\Pologne\\Models\\my_model"+str(model_number)+".h5")
 	return loaded_model
 
 
@@ -50,7 +51,9 @@ def train_model(model,training_data,training_label):
 
 
 def prepareData():
-	data=load_data("FP1-A2")
+	data=load_data("FP1-A2frequency")
+	print(data[0][0])
+	print("PORUUUUURURRURURU",data[1])
 	training_data=[]
 	training_label=[]
 	test_data=[]
@@ -63,7 +66,7 @@ def prepareData():
 	for j in range(16001,len(data)):
 		test_data.append(data[j][0])
 		test_label.append(data[j][1])
-	
+	print("OUI OUOIAZOEOIAZ JOIAZNDDO ZAND")
 	training_data=np.asarray(training_data)
 	training_label=np.asarray(training_label)
 	test_data=np.asarray(test_data)

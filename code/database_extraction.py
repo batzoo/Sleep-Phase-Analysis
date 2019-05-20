@@ -52,4 +52,4 @@ def load_data(signal_name,numpy_files_folder = utils.NUMPY_FILES_FOLDER):
 	data = np.load(numpy_files_folder+signal_name+'.npy')
 	return data
 
-extract_data()
+
