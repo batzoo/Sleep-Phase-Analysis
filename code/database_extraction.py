@@ -9,7 +9,7 @@ def save_array_npy(array,name,temporal_mode,path = '..\\..\\numpy_files\\'):
 	else:
 		np.save(path+name+'frequency',array)
 
-def extract_data_freq(ind_signals = [1,2,15,16,17,18,3,19,22,4,14],database_folder = utils.DATABASE_FOLDER,subjects=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]):
+def extract_data_freq(ind_signals = [1,2,15,16,17,18,3,19,22,4,14],database_folder = utils.DATABASE_FOLDER,subjects=np.arange(1,utils.NUMBER_SUBJECTS+1)):
 	
 	for ind_signal in range (len(ind_signals)) :
 		data = []
@@ -17,8 +17,8 @@ def extract_data_freq(ind_signals = [1,2,15,16,17,18,3,19,22,4,14],database_fold
 		for subject in subjects :
 			print('SUBJECT n° : ',subject,'/',len(subjects))
 			
-			pathEDF = database_folder+'subject'+str(subject)+'.edf'
-			pathHypnogram = database_folder+'HypnogramAASM_subject'+str(subject)+'.txt'
+			pathEDF = database_folder+'subject ('+str(subject)+').edf'
+			pathHypnogram = database_folder+'Hypnogram ('+str(subject)+').edf'
 
 			raw_data_EDF = edfDataExtraction_interestingSignals_unique(pathEDF,ind_signals[ind_signal])
 			raw_hypnogram = hypnogramDataExtraction(pathHypnogram)
@@ -44,8 +44,8 @@ def extract_data_temp(ind_signals = [1,2,15,16,17,18,3,19,22,4,14],database_fold
 		for subject in subjects :
 			print('SUBJECT n° : ',subject,'/',len(subjects))
 			
-			pathEDF = database_folder+'subject'+str(subject)+'.edf'
-			pathHypnogram = database_folder+'HypnogramAASM_subject'+str(subject)+'.txt'
+			pathEDF = database_folder+'subject ('+str(subject)+').edf'
+			pathHypnogram = database_folder+'HypnogramAASM ('+str(subject)+').txt'
 
 			raw_data_EDF = edfDataExtraction_interestingSignals_unique(pathEDF,ind_signals[ind_signal])
 			raw_hypnogram = hypnogramDataExtraction(pathHypnogram)
@@ -60,5 +60,3 @@ def extract_data_temp(ind_signals = [1,2,15,16,17,18,3,19,22,4,14],database_fold
 def load_data(signal_name,numpy_files_folder = utils.NUMPY_FILES_FOLDER):
 	data = np.load(numpy_files_folder+signal_name+'.npy')
 	return data
-
-

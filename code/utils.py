@@ -1,15 +1,33 @@
 import pyedflib
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
 from scipy import fftpack as spfft
 from scipy import signal as spsig
 
+DATABASE = "PHYSIONET_SLEEPEDFX_TELEMETRY"
+# DATABASE = "DREAMS"
 
-SIGNAL_LABELS = ['ECG', 'FP1-A2', 'CZ-A1', 'EMG1', 'EOG1', 'VTH', 'VAB', 'NAF2P-A1', 'NAF1', 'PHONO', 'PR', 'SAO2', 'PCPAP', 'POS', 'EOG2', 'O1-A2', 'FP2-A1', 'O2-A1', 'CZ2-A1', 'EMG2', 'PULSE', 'VTOT', 'EMG3']
-INTERESTING_SIGNALS_LABELS = ['FP1-A2','CZ-A1','O1-A2','FP2-A1','O2-A1','CZ2-A1','EMG1','EMG2','EMG3','EOG1','EOG2']
-DATABASE_FOLDER = '..\\..\\Pologne\\Dataset\\'
-NUMPY_FILES_FOLDER = '..\\..\\numpy_files\\'
+
+SIGNAL_LABELS_DREAMS = ['ECG', 'FP1-A2', 'CZ-A1', 'EMG1', 'EOG1', 'VTH', 'VAB', 'NAF2P-A1', 'NAF1', 'PHONO', 'PR', 'SAO2', 'PCPAP', 'POS', 'EOG2', 'O1-A2', 'FP2-A1', 'O2-A1', 'CZ2-A1', 'EMG2', 'PULSE', 'VTOT', 'EMG3']
+INTERESTING_SIGNALS_INDS_DREAMS = [1,2,15,16,17,18,3,19,22,4,14]
+
+SIGNAL_LABELS_PHYSIONET_SLEEPEDFX_TELEMETRY = ['EEG Fpz-Cz', 'EEG Pz-Oz', 'EOG horizontal', 'EMG submental', 'Marker']
+INTERESTING_SIGNALS_INDS_SLEEPEDFX = [0,1,2,3]
+
+if(DATABASE == "PHYSIONET_SLEEPEDFX_TELEMETRY"):
+    INTERESTING_SIGNALS_INDS = INTERESTING_SIGNALS_INDS_SLEEPEDFX
+    SIGNAL_LABELS  = SIGNAL_LABELS_PHYSIONET_SLEEPEDFX_TELEMETRY
+elif(DATABASE == "DREAMS"):
+    INTERESTING_SIGNALS_INDS = INTERESTING_SIGNALS_INDS_DREAMS
+    SIGNAL_LABELS  = SIGNAL_LABELS_DREAMS
+
+SAMPLING_FREQUENCY = 100
+DATABASE_FOLDER = '..\\..\\Dataset\\'+DATABASE+'\\'
+NUMPY_FILES_FOLDER = '..\\..\\numpy_files\\'+DATABASE+'\\'
+
+NUMBER_SUBJECTS = (int)(len(os.listdir(DATABASE_FOLDER))/2)
 
 def partialSum(signal, index, gap):
     """
@@ -113,10 +131,10 @@ def displaySignal(signal):
     plt.tight_layout()
     plt.show()
 
-def displaySignal_bis(signal,frequency):
+def displaySignal_bis(signal,frequency=100):
     #Diplay the signal
 
-    t = np.arange(0,len(signal)/200,1/200)
+    t = np.arange(0,len(signal)/frequency,1/frequency)
     plt.figure(figsize=(12,8))
     plt.title('Signal:')
     plt.plot(t,signal,'r', linewidth = 3)
@@ -125,7 +143,7 @@ def displaySignal_bis(signal,frequency):
     plt.tight_layout()
     plt.show()
 
-def displaySpectrum(spectrum,samplingFrequency=200):
+def displaySpectrum(spectrum,samplingFrequency=100):
     #Diplay the spectrum
     plt.figure(figsize=(12,8))
     plt.title('Linear spectrum:')
@@ -133,6 +151,16 @@ def displaySpectrum(spectrum,samplingFrequency=200):
     plt.xlabel('Frequency (Hz)')
     plt.ylabel('Level')
     plt.xlim([0,samplingFrequency/2])
+    plt.tight_layout()
+    plt.show()
+def displaySpectrum_bis(spectrum,number_points,samplingFrequency=100):
+    #Diplay the spectrum
+    plt.figure(figsize=(12,8))
+    plt.title('Linear spectrum:')
+    plt.plot(np.arange(-samplingFrequency/2,samplingFrequency/2,samplingFrequency/number_points),spectrum,'r', linewidth = 3)
+    plt.xlabel('Frequency (Hz)')
+    plt.ylabel('Level')
+    # plt.xlim([0,samplingFrequency/2])
     plt.tight_layout()
     plt.show()
 
@@ -255,15 +283,15 @@ def splitSignal(interval,signal):
             splittedSignal[i][1][j]=j/200
     return splittedSignal
 
-def splitSignal_notime(interval,signal):
-    splittedSignal=np.zeros((int(len(signal)/(interval*200)),interval*200))
+def splitSignal_notime(interval,signal,frequency):
+    splittedSignal=np.zeros((int(len(signal)/(interval*frequency)),interval*frequency))
     # print("splitted",splittedSignal.shape,"oui",splittedSignal[0])
-    for i in range(int(len(signal)/(interval*200))):
-        for j in range(interval*200):
-            splittedSignal[i][j]=signal[i*interval*200+j]
+    for i in range(int(len(signal)/(interval*frequency))):
+        for j in range(interval*frequency):
+            splittedSignal[i][j]=signal[i*interval*frequency+j]
     return splittedSignal
 
-def split_hypnogram(hypno,interval = 5):
+def split_hypnogram_DREAMS(hypno,interval = 5):
     hypno_30s = []
     n = (int)(30 / interval)
     for i in range (0,len(hypno)-1,n):

@@ -18,13 +18,15 @@ model_number=""
 
 def build_model():
 	model=keras.Sequential()
-	model.add(layers.Dense(30,input_dim=750))
-	model.add(layers.Activation('relu'))
+	model.add(layers.Dense(750,input_dim=750))
+	model.add(layers.Activation('sigmoid'))
 	model.add(layers.Dense(375))
 	model.add(layers.Activation('relu'))
-	model.add(layers.Dense(1))
+	model.add(layers.Dense(185))
+	model.add(layers.Activation('relu'))
+	model.add(layers.Dense(1,activation='relu'))
 
-	optimizer=keras.optimizers.RMSprop(0.001)
+	optimizer = keras.optimizers.Adam(lr=0.00001)
 
 	model.compile(loss='mean_absolute_error',
                    optimizer=optimizer,
@@ -41,44 +43,75 @@ def load_model_ez():
 def save_model(model):
 	global model_number
 	if(model_number==""):
-		model.save("..\\..\\Pologne\\Models\\my_model4.h5")
-	print("Saved as my_model2")
+		model.save("..\\..\\Pologne\\Models\\my_model5.h5")
+	print("Saved as my_model4")
 
 def train_model(model,training_data,training_label):
-	global NUMBER_OF_EPOCHS
+	
+	NUMBER_OF_EPOCHS=int(input("Number of Epochs :"))
+	model.summary()
+
 	model.fit(training_data, training_label, epochs=NUMBER_OF_EPOCHS ,verbose=1)
-	save_model(model)	
+	save_model(model)
+	train_again=input("Train again ? (Y)es/(N)o")
+	if(train_again=="Y"):
+		train_model(model,training_data,training_label)
+	else:
+		return
 
 
-def prepareData():
-	data=load_data("FP1-A2frequency")
+def prepareDataForLSTM():
+	data=load_data("CZ-A1frequency")
+	data2=load_data("CZ2-A1frequency")
 	print(data[0][0])
-	print("PORUUUUURURRURURU",data[1])
-	training_data=[]
-	training_label=[]
-	test_data=[]
-	test_label=[]
 	print(len(data))
-	for i in range(16000):
+	training_data=[]
+	test_data=[]
+	training_label=[]
+	test_label=[]
+	for i in range(18000):
+		training_data.append(np.asarray([data[i][0],data2[i][0]]))
+		training_label.append(np.asarray(data[i][1]))
+	
+	for j in range(18001,len(data)):
+		test_data.append(np.asarray([data[j][0],data2[j][0]]))
+		test_label.append(np.asarray(data[j][1]))
+
+	training_data=np.asarray(training_data)
+	training_label=np.asarray(training_label)
+	test_data=np.asarray(test_data)
+	test_label=np.asarray(test_label)
+
+	return training_data,training_label,test_data,test_label
+
+
+def prepareDataForDense():
+	data=load_data("CZ-A1frequency")
+	training_data=[]
+	test_data=[]
+	training_label=[]
+	test_label=[]
+	for i in range(18000):
 		training_data.append(data[i][0])
 		training_label.append(data[i][1])
 	
-	for j in range(16001,len(data)):
+	for j in range(18001,len(data)):	
 		test_data.append(data[j][0])
 		test_label.append(data[j][1])
-	print("OUI OUOIAZOEOIAZ JOIAZNDDO ZAND")
+
 	training_data=np.asarray(training_data)
 	training_label=np.asarray(training_label)
 	test_data=np.asarray(test_data)
 	test_label=np.asarray(test_label)
 	return training_data,training_label,test_data,test_label
+
 def master():
-	global NUMBER_OF_EPOCHS
 	ctr=0
 	ctr2=0
-	training_data,training_label,test_data,test_label=prepareData()
+	training_data,training_label,test_data,test_label=prepareDataForDense()
 
-
+	print(training_data.shape)
+	print(training_label.shape)
 	print("Nouveau ou ancien modele : (O)ld/(N)ew ")
 	enter=input()
 
@@ -95,7 +128,6 @@ def master():
 	enter2=input()
 
 	if(enter2=='O'):
-		NUMBER_OF_EPOCHS=int(input("Number of Epochs :"))
 		train_model(model,training_data,training_label)
 	
 	predictions=model.predict(test_data)
@@ -103,6 +135,7 @@ def master():
 		if(round(predictions[i][0])==test_label[i]):
 			ctr+=1
 		else:
+			print(round(predictions[i][0]),test_label[i])
 			ctr2+=1
 	print("TRUE : ",ctr,"FALSE : ",ctr2)	
 
