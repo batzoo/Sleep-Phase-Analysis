@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import pathlib
+from tensorflow.keras.utils import plot_model
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -38,26 +39,33 @@ def build_model(model_type):
 	return model,model_type
 def build_model_Dense():
 	model=keras.Sequential()
-	model.add(layers.Dense(750,input_dim=750))
+	model.add(layers.Dense(200,input_dim=375,kernel_initializer=keras.initializers.Zeros()))
 	model.add(layers.Activation('sigmoid'))
-	model.add(layers.Dense(375))
-	model.add(layers.Activation('tanh'))
 	model.add(layers.Dense(185))
-	model.add(layers.Activation('relu'))
-	model.add(layers.Dense(90,activation='relu'))
-	model.add(layers.Dense(1,activation='linear'))
-	optimizer = keras.optimizers.Adam(lr=0.0001)
+	model.add(layers.Activation('sigmoid'))
+	model.add(layers.Dense(92))
+	model.add(layers.ELU(alpha=1.0))
+	model.add(layers.BatchNormalization())
+	model.add(layers.Dense(1,activation='relu'))
+	
+
+
+	optimizer = keras.optimizers.Adam(lr=0.0001,beta_1=0.99, beta_2=0.999, epsilon=0.01, decay=0.01, amsgrad=False)
 
 	model.compile(loss='mean_absolute_error',
                    optimizer=optimizer,
-                   metrics=['binary_accuracy'])
+                   metrics=['acc'])
 	model.summary()
 	return model
 
 def build_model_LSTM():
 	model=keras.Sequential()
-	model.add(layers.LSTM(128,input_shape=(2,750),return_sequences=True))
+	model.add(layers.LSTM(128,input_shape=(2,375),return_sequences=True))
 	model.add(layers.LSTM(128,input_shape=(128,),return_sequences=False))
+	model.add(layers.Dense(185,activation='sigmoid'))
+	model.add(layers.Dense(185))
+	model.add(layers.Dense(92,activation='relu'))
+	model.add(layers.BatchNormalization())
 	model.add(layers.Dense(1,activation='relu'))
 	
 	optimizer = keras.optimizers.Adam(lr=0.0001)
@@ -87,7 +95,7 @@ def save_model(model,model_number):
 def train_model(model,training_data,training_label):
 	NUMBER_OF_EPOCHS=int(input("Number of epochs : "))
 
-	model.fit(training_data, training_label, epochs=NUMBER_OF_EPOCHS ,verbose=1)
+	history=model.fit(training_data, training_label, epochs=NUMBER_OF_EPOCHS ,verbose=1)
 	save=""
 	train_again=""
 	while(save!='Y'and save!='N' and save!='n' and save!='y'):
@@ -99,7 +107,7 @@ def train_model(model,training_data,training_label):
 		train_again=input("Train again ? (Y)es/(N)o \n").upper()
 	if(train_again=='Y'):
 		train_model(model,training_data,training_label)
-
+	return history
 
 
 
@@ -148,16 +156,16 @@ def prepareDataForLSTM(signal1,signal2,percentage_training):
 def prepareData(model_type):
 	ctr=0
 	print("Enter your signal(s) : ")
-	for i in name_signaux_interessants:
-		print(i,ctr)
+	for i in utils.INTERESTING_SIGNALS_INDS:
+		print(utils.SIGNAL_LABELS[i],ctr)
 		ctr+=1
 	if(model_type=='L'):
 		index_1=int(input("Signal 1 : "))
 		index_2=int(input("Signal 2 : "))	
-		training_data,training_label,test_data,test_label=prepareDataForLSTM(name_signaux_interessants[index_1],name_signaux_interessants[index_2],80)
+		training_data,training_label,test_data,test_label=prepareDataForLSTM(utils.SIGNAL_LABELS[index_1],utils.SIGNAL_LABELS[index_2],80)
 	elif(model_type=='D'):
 		index=int(input("Signal : "))
-		training_data,training_label,test_data,test_label=prepareDataForDense(name_signaux_interessants[index],80)
+		training_data,training_label,test_data,test_label=prepareDataForDense(utils.SIGNAL_LABELS[index],80)
 	print("Shape : ",training_data.shape)
 	return training_data,training_label,test_data,test_label
 
@@ -181,6 +189,15 @@ def main():
 	model,model_type=build_model(model_type)
 	training_data,training_label,test_data,test_label=prepareData(model_type)
 	
-	train_model(model,training_data,training_label)
+	history=train_model(model,training_data,training_label)
+
+	# Plot training & validation accuracy values
+	plt.plot(history.history['acc'])
+	plt.plot(history.history['loss'])
+	plt.title('Model accuracy')
+	plt.ylabel('Accuracy')
+	plt.xlabel('Epoch')
+	plt.legend(['Train', 'Test'], loc='upper left')
+	plt.show()
 	verification(model,test_data,test_label)
 main()
