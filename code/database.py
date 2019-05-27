@@ -70,7 +70,7 @@ def splitPSG(signal,frequency= utils.SAMPLING_FREQUENCY):
             splittedSignal[i][j]=signal[i*30*frequency+j]
     return splittedSignal
 
-def extract_data_freq(ind_signals = utils.INTERESTING_SIGNALS_INDS,subjects=np.arange(1,utils.NUMBER_SUBJECTS,dtype=np.int32)):
+def extract_data_freq(lissage,ind_signals = utils.INTERESTING_SIGNALS_INDS,subjects=np.arange(1,utils.NUMBER_SUBJECTS,dtype=np.int32)):
 	for ind_signal in range(len(ind_signals)) :
 		data = []
 		print('\n\nSIGNAL n° : ',ind_signal+1,'/',len(ind_signals),'\n\n')
@@ -88,13 +88,14 @@ def extract_data_freq(ind_signals = utils.INTERESTING_SIGNALS_INDS,subjects=np.a
 			for signal in signals:
 				signal_freq = spectrumCalculation_notime(signal)
 				signal_freq = signal_freq[1500:1875]
-				signal_freq = signalSmoother(signal_freq,10)
+				if(lissage>0):
+					signal_freq = signalSmoother(signal_freq,lissage)
 				signals_freq.append(signal_freq)
 			signals = signals_freq
 
 			data.extend(create_signal_label_maps(signals,hypnogram))
 		
-		save_array_npy(data,utils.SIGNAL_LABELS[ind_signals[ind_signal]],False)
+		save_array_npy(data,utils.SIGNAL_LABELS[ind_signals[ind_signal]]+str(lissage),False)
 
 def extract_data_temp(ind_signals = utils.INTERESTING_SIGNALS_INDS,subjects=np.arange(1,utils.NUMBER_SUBJECTS+1)):
 	
@@ -132,5 +133,4 @@ def save_array_npy(array,name,temporal_mode,path = utils.NUMPY_FILES_FOLDER):
 	else:
 		np.save(path+name+'frequency',array)
 
-extract_data_freq()
-
+extract_data_freq(0)
