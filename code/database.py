@@ -5,7 +5,17 @@ import pyedflib
 
 database_folder = utils.DATABASE_FOLDER
 
+def resample(old_frequency,new_frequency,data):
+	if(new_frequency > old_frequency):
+		print("new frequency must be lower than old frequency")
+		return
+	else :
+		new_data = []
+		for i in range (len(data)):
+			if ((i%(old_frequency/new_frequency))==0):
+				new_data.append(data[i])
 
+		return new_data
 def decode_DREAMS_hypnogram(pathHypnogram):
 	file = open(pathHypnogram+'.txt', "r")
 	raw_hypnogram = file.read().split("\n")
@@ -56,10 +66,7 @@ def decode_PSG(pathPSG,ind_signal):
 	signal_buffer = filePSG.readSignal(ind_signal)
 	signal = signal_buffer
 	if(utils.DATABASE == "DREAMS"):
-		signal = []
-		for i in range(len(signal_buffer)):
-			if(i%2==0):
-				signal.append(signal_buffer[i])
+		signal = resample(200,100,signal_buffer)
 	filePSG._close()
 	return signal
 
@@ -133,4 +140,4 @@ def save_array_npy(array,name,temporal_mode,path = utils.NUMPY_FILES_FOLDER):
 	else:
 		np.save(path+name+'frequency',array)
 
-extract_data_freq(0)
+# extract_data_freq(0)
