@@ -3,7 +3,24 @@ from utils import *
 from database_extraction import *
 import pyedflib
 
-database_folder = utils.DATABASE_FOLDER
+def spectrumCalculation(signal,dim2,samplingFrequency=200):
+	"""
+	Input:  - signal
+	
+	Output: - Return a list which is [[spectrumList],[frequencyList]]
+	"""
+	Nfft = len(signal) #Number of dots for the fft
+	
+	#Spectrum calculation
+	S = spfft.fft(signal, n=Nfft)
+	spectrum = abs(spfft.fftshift(S))
+	    
+	#Frequency calculation
+	frequency = np.arange(-samplingFrequency/2,samplingFrequency/2,samplingFrequency/Nfft) #All the frequency dots
+	if(dim2):
+		return spectrum,frequency
+	else:
+		return spectrum
 
 def resample(old_frequency,new_frequency,data):
 	if(new_frequency > old_frequency):
@@ -64,20 +81,28 @@ def decode_PSG(pathPSG,ind_signal):
 	filePSG = pyedflib.EdfReader(pathPSG)
 	number_of_signals = filePSG.signals_in_file
 	signal_buffer = filePSG.readSignal(ind_signal)
-	signal = signal_buffer
 	if(utils.DATABASE == "DREAMS"):
 		signal = resample(200,100,signal_buffer)
+	else:
+		signal = signal_buffer	
 	filePSG._close()
 	return signal
 
-def splitPSG(signal,frequency= utils.SAMPLING_FREQUENCY):
-    splittedSignal=np.zeros((int(len(signal)/(30*frequency)),30*frequency))
-    for i in range(int(len(signal)/(30*frequency))):
-        for j in range(30*frequency):
-            splittedSignal[i][j]=signal[i*30*frequency+j]
-    return splittedSignal
+def splitPSG(signal,dim2,frequency= utils.SAMPLING_FREQUENCY):
+	if(dim2):
+		splittedSignal=np.zeros((int(len(signal)/(30*frequency)),2,30*frequency))
+	else:
+		splittedSignal=np.zeros((int(len(signal)/(30*frequency)),30*frequency))
+	for i in range(int(len(signal)/(30*frequency))):
+		for j in range(30*frequency):
+			if(dim2):
+				splittedSignal[i][0][j]=signal[i*30*frequency+j]
+				splittedSignal[i][1][j]=j/frequency
+			else:
+				splittedSignal[i][j]=signal[i*30*frequency+j]
+	return splittedSignal
 
-def extract_data_freq(lissage,ind_signals = utils.INTERESTING_SIGNALS_INDS,subjects=np.arange(1,utils.NUMBER_SUBJECTS,dtype=np.int32)):
+def extract_data_freq(lissage,dim2,ind_signals = utils.INTERESTING_SIGNALS_INDS,subjects=np.arange(1,utils.NUMBER_SUBJECTS,dtype=np.int32)):
 	for ind_signal in range(len(ind_signals)) :
 		data = []
 		print('\n\nSIGNAL n° : ',ind_signal+1,'/',len(ind_signals),'\n\n')
@@ -90,21 +115,29 @@ def extract_data_freq(lissage,ind_signals = utils.INTERESTING_SIGNALS_INDS,subje
 			raw_data_PSG = decode_PSG(pathPSG,ind_signals[ind_signal])
 			hypnogram = decode_hypnogram(pathHypnogram)
 
-			signals = splitPSG(raw_data_PSG)
+			signals = splitPSG(raw_data_PSG,dim2)
 			signals_freq = []
 			for signal in signals:
-				signal_freq = spectrumCalculation_notime(signal)
-				signal_freq = signal_freq[1500:1875]
-				if(lissage>0):
-					signal_freq = signalSmoother(signal_freq,lissage)
-				signals_freq.append(signal_freq)
+				if(dim2):
+					signal_freq=[]
+					signal_temp, frequency_temp = spectrumCalculation(signal[0],dim2)
+					if(lissage>0):
+						signal_freq = signalSmoother(signal_freq,lissage)
+						signal_freq.append([signal_temp[1500:1875],frequency_temp[1500:1875]])
+					else:
+						signal_freq.append([signal_temp[1500:1875],frequency_temp[1500:1875]])
+				else:
+					signal_freq = spectrumCalculation(signal,dim2)
+					signal_freq = signal_freq[1500:1875]
+					if(lissage>0):
+						signal_freq = signalSmoother(signal_freq,lissage)
+				signals_freq.extend(signal_freq)
 			signals = signals_freq
-
-			data.extend(create_signal_label_maps(signals,hypnogram))
+			data.extend(create_signal_label_maps(signals,hypnogram,dim2))
 		
-		save_array_npy(data,utils.SIGNAL_LABELS[ind_signals[ind_signal]]+str(lissage),False)
+		save_array_npy(data,utils.SIGNAL_LABELS[ind_signals[ind_signal]],False,lissage,dim2)
 
-def extract_data_temp(ind_signals = utils.INTERESTING_SIGNALS_INDS,subjects=np.arange(1,utils.NUMBER_SUBJECTS+1)):
+def extract_data_temp(lissage,dim2,ind_signals = utils.INTERESTING_SIGNALS_INDS,subjects=np.arange(1,utils.NUMBER_SUBJECTS+1)):
 	
 	for ind_signal in range(len(ind_signals)) :
 		data = []
@@ -118,26 +151,50 @@ def extract_data_temp(ind_signals = utils.INTERESTING_SIGNALS_INDS,subjects=np.a
 			raw_data_PSG = decode_PSG(pathPSG,ind_signals[ind_signal])
 			raw_hypnogram = decode_hypnogram(pathHypnogram)
 
-			signals = splitPSG(raw_data_PSG)
-			signals = signals_freq
-
-			data.extend(create_signal_label_maps(signals,hypnogram))
+			signals = splitPSG(raw_data_PSG,dim2)
 		
-		save_array_npy(data,utils.SIGNAL_LABELS[ind_signals[ind_signal]],False)
+			data.extend(create_signal_label_maps(signals,hypnogram,dim2))
+		
+		save_array_npy(data,utils.SIGNAL_LABELS[ind_signals[ind_signal]],True,lissage,dim2)
 
-def create_signal_label_maps(PSG_signal,hypnogram):
+def create_signal_label_maps(PSG_signal,hypnogram,dim2):
 	data=[]
 	for i in range([len(hypnogram),len(PSG_signal)][np.argmin([len(hypnogram),len(PSG_signal)])]):
-		data.append([PSG_signal[i],hypnogram[i]])
+		if(dim2):
+			data.append([PSG_signal[i][0],PSG_signal[i][1],hypnogram[i]])
+		else:
+			data.append([PSG_signal[i],hypnogram[i]])
 	return data
 
 def load_data(signal_name,numpy_files_folder = utils.NUMPY_FILES_FOLDER):
 	data = np.load(numpy_files_folder+signal_name+'.npy')
 	return data
-def save_array_npy(array,name,temporal_mode,path = utils.NUMPY_FILES_FOLDER):
-	if(temporal_mode):
-		np.save(path+name+'temporal',array)
+def save_array_npy(array,name,temporal_mode,lissage,dim2,path = utils.NUMPY_FILES_FOLDER):
+	if(dim2):
+		dim2 = "2dim"
 	else:
-		np.save(path+name+'frequency',array)
+		dim2 = "1dim"
+	if(temporal_mode):
+		np.save(path+name+'temporal'+str(lissage)+dim2,array)
+	else:
+		np.save(path+name+'frequency'+str(lissage)+dim2,array)
 
-# extract_data_freq(0)
+def main():
+	extract_mode=""
+	while( extract_mode!='F' and  extract_mode!='F' and extract_mode!='T' and  extract_mode!='t'):
+		extract_mode=input("Extract in (F)requency or (T)emporal Domain \n").upper()
+	lissage = -1 
+	while(lissage < 0 or lissage > 50):
+		lissage=(int)(input("Choose smoothing degree (integer) : \n"))
+	dimensions = ''
+	while(dimensions !='Y' and dimensions != 'N'):
+		dimensions = input("Extract with temporal/frequency array ? (Y)es / (N)o \n").upper()
+	if(dimensions == 'Y'):
+		dimensions = True
+	elif(dimensions == 'N'):
+		dimensions = False
+
+	if(extract_mode == 'F'):
+		extract_data_freq(lissage,dimensions)
+	elif(extract_mode == 'T'):
+		extract_data_temp(dimensions)

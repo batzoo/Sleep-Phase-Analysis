@@ -6,8 +6,8 @@ import os
 from scipy import fftpack as spfft
 from scipy import signal as spsig
 
-#DATABASE = "PHYSIONET_SLEEPEDFX_TELEMETRY"
-DATABASE = "DREAMS"
+DATABASE = "PHYSIONET_SLEEPEDFX_TELEMETRY"
+# DATABASE = "DREAMS"
 
 
 SIGNAL_LABELS_DREAMS = ['ECG', 'FP1-A2', 'CZ-A1', 'EMG1', 'EOG1', 'VTH', 'VAB', 'NAF2P-A1', 'NAF1', 'PHONO', 'PR', 'SAO2', 'PCPAP', 'POS', 'EOG2', 'O1-A2', 'FP2-A1', 'O2-A1', 'CZ2-A1', 'EMG2', 'PULSE', 'VTOT', 'EMG3']
@@ -87,39 +87,39 @@ def signalIntervalExtractionFromBuffer(buffer,signalIndex=0,intervalMin=0,interv
     
     return np.array([signal,time])
 
-def spectrumCalculation(signal,samplingFrequency=200):
-    """
-    Input:  - signal
+# def spectrumCalculation(signal,samplingFrequency=200):
+#     """
+#     Input:  - signal
     
-    Output: - Return a list which is [[spectrumList],[frequencyList]]
-    """
-    Nfft = len(signal[0]) #Number of dots for the fft
+#     Output: - Return a list which is [[spectrumList],[frequencyList]]
+#     """
+#     Nfft = len(signal[0]) #Number of dots for the fft
     
-    #Spectrum calculation
-    S = spfft.fft(signal[0], n=Nfft)
-    spectrum = abs(spfft.fftshift(S))
+#     #Spectrum calculation
+#     S = spfft.fft(signal[0], n=Nfft)
+#     spectrum = abs(spfft.fftshift(S))
         
-    #Frequency calculation
-    frequency = np.arange(-samplingFrequency/2,samplingFrequency/2,samplingFrequency/Nfft) #All the frequency dots
+#     #Frequency calculation
+#     frequency = np.arange(-samplingFrequency/2,samplingFrequency/2,samplingFrequency/Nfft) #All the frequency dots
 
-    return np.array([spectrum,frequency])
+#     return np.array([spectrum,frequency])
 
-def spectrumCalculation_notime(signal,samplingFrequency=200):
-    """
-    Input:  - signal
+# def spectrumCalculation_notime(signal,samplingFrequency=200):
+#     """
+#     Input:  - signal
     
-    Output: - Return a list which is [[spectrumList],[frequencyList]]
-    """
-    Nfft = len(signal) #Number of dots for the fft
+#     Output: - Return a list which is [[spectrumList],[frequencyList]]
+#     """
+#     Nfft = len(signal) #Number of dots for the fft
     
-    #Spectrum calculation
-    S = spfft.fft(signal, n=Nfft)
-    spectrum = abs(spfft.fftshift(S))
+#     #Spectrum calculation
+#     S = spfft.fft(signal, n=Nfft)
+#     spectrum = abs(spfft.fftshift(S))
         
-    #Frequency calculation
-    frequency = np.arange(-samplingFrequency/2,samplingFrequency/2,samplingFrequency/Nfft) #All the frequency dots
+#     #Frequency calculation
+#     frequency = np.arange(-samplingFrequency/2,samplingFrequency/2,samplingFrequency/Nfft) #All the frequency dots
 
-    return spectrum
+#     return spectrum
 
 def displaySignal(signal):
     #Diplay the signal
