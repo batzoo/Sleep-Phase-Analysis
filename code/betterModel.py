@@ -39,13 +39,12 @@ def build_model(model_type):
 	return model,model_type
 def build_model_Dense():
 	model=keras.Sequential()
-	model.add(layers.Dense(200,input_dim=375,kernel_initializer=keras.initializers.Zeros()))
+	model.add(layers.Dense(375,input_dim=375))
 	model.add(layers.Activation('sigmoid'))
-	model.add(layers.Dense(185))
+	model.add(layers.Dense(200))
 	model.add(layers.Activation('sigmoid'))
-	model.add(layers.Dense(92))
-	model.add(layers.ELU(alpha=1.0))
-	model.add(layers.BatchNormalization())
+	model.add(layers.Dense(100))
+	model.add(layers.Activation('relu'))
 	model.add(layers.Dense(1,activation='relu'))
 	
 
@@ -60,19 +59,18 @@ def build_model_Dense():
 
 def build_model_LSTM():
 	model=keras.Sequential()
-	model.add(layers.LSTM(128,input_shape=(2,375),return_sequences=True))
-	model.add(layers.LSTM(128,input_shape=(128,),return_sequences=False))
-	model.add(layers.Dense(185,activation='sigmoid'))
-	model.add(layers.Dense(185))
-	model.add(layers.Dense(92,activation='relu'))
-	model.add(layers.BatchNormalization())
+	model.add(layers.LSTM(128,input_shape=(2,375),return_sequences=True,activation='sigmoid'))
+	model.add(layers.LSTM(128,input_shape=(128,),return_sequences=True,activation='tanh'))
+	model.add(layers.LSTM(64,input_shape=(128,),return_sequences=False,activation='tanh'))
+	model.add(layers.Dense(64,activation='tanh'))
+	model.add(layers.Dense(32,activation='tanh'))
 	model.add(layers.Dense(1,activation='relu'))
 	
-	optimizer = keras.optimizers.Adam(lr=0.0001)
+	optimizer = keras.optimizers.Adam(lr=0.001)
 
 	model.compile(loss='mean_absolute_error',
                    optimizer=optimizer,
-                   metrics=['binary_accuracy'])
+                   metrics=['acc'])
 	model.summary()
 	return model
 
@@ -115,7 +113,7 @@ def prepareDataForDense(signal,percentage_training):
 	data=load_data(signal+"frequency")
 	training_data=[]
 	test_data=[]
-	training_label=[]
+	training_label=[] 
 	test_label=[]
 	for i in range(int(len(data)/100*percentage_training)):
 		training_data.append(data[i][0])
@@ -181,14 +179,69 @@ def verification(model,test_data,test_label):
 			wrong+=1
 	print("TRUE : ",right,"FALSE : ",wrong)
 
+def load_all_data(percentage_training):
+	data=load_data("FP1-A2frequency")
+	data2=load_data("CZ-A1frequency")
+	data3=load_data("FP2-A1frequency")
+	data4=load_data("CZ2-A1frequency")
+	data5=load_data("O1-A2frequency")
+	data6=load_data("O2-A1frequency")
+	training_data=[]
+	test_data=[]
+	training_label=[]
+	test_label=[]
+	for i in range(int(len(data)/100*percentage_training)):
+		training_data.append(data[i][0])
+		training_label.append(data[i][1])
+	for k in range(int(len(data)/100*percentage_training)):
+		training_data.append(data2[k][0])
+		training_label.append(data2[k][1])
+	for l in range(int(len(data)/100*percentage_training)):
+		training_data.append(data3[l][0])
+		training_label.append(data3[l][1])
+	for m in range(int(len(data)/100*percentage_training)):
+		training_data.append(data4[m][0])
+		training_label.append(data4[m][1])
+	for n in range(int(len(data)/100*percentage_training)):
+		training_data.append(data5[n][0])
+		training_label.append(data5[n][1])
+	for o in range(int(len(data)/100*percentage_training)):
+		training_data.append(data6[o][0])
+		training_label.append(data6[o][1])
+
+	for p  in range(int(len(data)/100*percentage_training+1),len(data)):	
+		test_data.append(data[p][0])
+		test_label.append(data[p][1])
+	for r in range(int(len(data)/100*percentage_training+1),len(data)):	
+		test_data.append(data2[r][0])
+		test_label.append(data2[r][1])
+	for s in range(int(len(data)/100*percentage_training+1),len(data)):	
+		test_data.append(data3[s][0])
+		test_label.append(data3[s][1])
+	for t in range(int(len(data)/100*percentage_training+1),len(data)):	
+		test_data.append(data4[t][0])
+		test_label.append(data4[t][1])
+	for u in range(int(len(data)/100*percentage_training+1),len(data)):	
+		test_data.append(data5[u][0])
+		test_label.append(data5[u][1])
+	for v in range(int(len(data)/100*percentage_training+1),len(data)):	
+		test_data.append(data6[v][0])
+		test_label.append(data6[v][1])
+
+	training_data=np.asarray(training_data)
+	training_label=np.asarray(training_label)
+	test_data=np.asarray(test_data)
+	test_label=np.asarray(test_label)
+	return training_data,training_label,test_data,test_label
 
 def main():
 	model_type=""
 	while( model_type!='L' and  model_type!='l' and model_type!='D' and  model_type!='d' and model_type!='O'):
 		model_type=input("(L)STM or (D)ense or load (O)ld model ? \n").upper()
 	model,model_type=build_model(model_type)
-	training_data,training_label,test_data,test_label=prepareData(model_type)
+	#training_data,training_label,test_data,test_label=prepareData(model_type)
 	
+	training_data,training_label,test_data,test_label=load_all_data(80)
 	history=train_model(model,training_data,training_label)
 
 	# Plot training & validation accuracy values
