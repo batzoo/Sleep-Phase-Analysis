@@ -135,7 +135,6 @@ def extract_data_freq(separate_subject,lissage,dim2,ind_signals = utils.INTEREST
 						signal_freq = signalSmoother(signal_freq,lissage)
 				signals_freq.append(signal_freq)
 			signals = signals_freq
-			print(np.shape(signals))
 			data.extend(create_signal_label_maps(signals,hypnogram,dim2))
 			if(separate_subject):
 				save_array_npy(data,utils.SIGNAL_LABELS[ind_signals[ind_signal]],False,lissage,dim2,str(subject))
@@ -188,14 +187,14 @@ def save_array_npy(array,name,temporal_mode,lissage,dim2,subject='',path = utils
 		dim2 = "1dim"
 	if(temporal_mode):
 		if(subject != ''):
-			np.save(path+name+'temporal'+str(lissage)+dim2+'subject'+str(subject),array)
+			np.save(path+'\\'+dim2+'\\separated_subjects\\'+name+'temporal'+str(lissage)+dim2+'subject'+str(subject),array)
 		else:
-			np.save(path+name+'temporal'+str(lissage)+dim2,array)
+			np.save(path+'\\'+dim2+'\\'+name+'temporal'+str(lissage)+dim2,array)
 	else:
 		if(subject != ''):
-			np.save(path+name+'frequency'+str(lissage)+dim2+'subject'+str(subject),array)
+			np.save(path+'\\'+dim2+'\\separated_subjects\\'+name+'frequency'+str(lissage)+dim2+'subject'+str(subject),array)
 		else:
-			np.save(path+name+'frequency'+str(lissage)+dim2,array)
+			np.save(path+'\\'+dim2+'\\'+name+'frequency'+str(lissage)+dim2,array)
 
 def main():
 	extract_mode=""
