@@ -6,8 +6,8 @@ import os
 from scipy import fftpack as spfft
 from scipy import signal as spsig
 
-DATABASE = "PHYSIONET_SLEEPEDFX_TELEMETRY"
-# DATABASE = "DREAMS"
+#DATABASE = "PHYSIONET_SLEEPEDFX_TELEMETRY"
+DATABASE = "DREAMS"
 
 
 SIGNAL_LABELS_DREAMS = ['ECG', 'FP1-A2', 'CZ-A1', 'EMG1', 'EOG1', 'VTH', 'VAB', 'NAF2P-A1', 'NAF1', 'PHONO', 'PR', 'SAO2', 'PCPAP', 'POS', 'EOG2', 'O1-A2', 'FP2-A1', 'O2-A1', 'CZ2-A1', 'EMG2', 'PULSE', 'VTOT', 'EMG3']
