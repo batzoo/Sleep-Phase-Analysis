@@ -1,11 +1,11 @@
 from utils import * 
 from database import * 
-
-import mne
+import mne.io.edf
 
 subject = 1
 dim2 = True
 
-data = np.load("..\\..\\numpy_files\\DREAMS\\CZ2-A1frequency101dimsubject1.npy")
-print(np.shape(data))
-print(data[0][0])
+mescouilles, data, mescouilles = mne.io.edf.read_raw_edf("..\\..\\Dataset\\DREAMS\\subject (1).edf")
+# data = mne.io.edf.read_edf_header("..\\..\\Dataset\\DREAMS\\subject (1).edf")
+# data = pyedflib.EdfReader("..\\..\\Dataset\\DREAMS\\subject (1).edf")
+print(data)
