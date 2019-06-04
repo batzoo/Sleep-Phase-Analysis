@@ -58,7 +58,7 @@ def build_model_Dense():
 
 def build_model_LSTM():
 	model=keras.Sequential()
-	layer=layers.Conv1D(16,4,input_shape=(2,375),activation='relu',padding='same')
+	layer=layers.Conv1D(32,4,input_shape=(2,375),activation='relu',padding='same')
 	model.add(layer)
 	print("input conv 8",layer.input_shape)
 	print(layer.output_shape)
@@ -74,7 +74,7 @@ def build_model_LSTM():
 	model.add(layer)
 	print("input maxpool 1",layer.input_shape)
 	print(layer.output_shape)
-	layer=layers.Conv1D(32,8,activation='relu',padding='same')
+	layer=layers.Conv1D(8,8,activation='relu',padding='same')
 	model.add(layer)
 	print("input conv 32",layer.input_shape)
 	print(layer.output_shape)
@@ -82,9 +82,9 @@ def build_model_LSTM():
 	model.add(layer)
 	print("input maxpool 1",layer.input_shape)
 	print(layer.output_shape)
-	model.add(layers.LSTM(64,input_shape=(375,),return_sequences=True,activation='relu'))
-	model.add(layers.LSTM(64,input_shape=(125,),return_sequences=False,activation='relu'))
-	model.add(layers.Dense(15,activation='relu'))
+	model.add(layers.LSTM(25,input_shape=(375,),return_sequences=True,activation='relu'))
+	model.add(layers.LSTM(25,input_shape=(25,),return_sequences=False,activation='relu'))
+	model.add(layers.Dense(32,activation='relu'))
 	model.add(layers.Dense(1,activation='softplus'))
 	
 	optimizer = keras.optimizers.RMSprop(lr=0.0005)
@@ -158,9 +158,11 @@ def prepareDataForLSTM(signal1,percentage_training):
 	test_data=[]
 	training_label=[]
 	test_label=[]
+
 	for i in range(int(len(data)/100*percentage_training)):
-		training_data.append(np.asarray([data[i][0],data[i][1]]))
-		training_label.append(np.asarray(data[i][2]))
+		if(not(data[i][0][np.argmax(data[i][0])]>11000)):
+			training_data.append(np.asarray([data[i][0],data[i][1]]))
+			training_label.append(np.asarray(data[i][2]))
 	
 	for j in range(int(len(data)/100*percentage_training)+1,len(data)):
 		test_data.append(np.asarray([data[j][0],data[j][1]]))
@@ -202,53 +204,53 @@ def verification(model,test_data,test_label):
 	print("TRUE : ",right,"FALSE : ",wrong)
 
 def load_all_data(percentage_training):
-	data=load_data("FP1-A2frequency")
-	data2=load_data("CZ-A1frequency")
-	data3=load_data("FP2-A1frequency")
-	data4=load_data("CZ2-A1frequency")
-	data5=load_data("O1-A2frequency")
-	data6=load_data("O2-A1frequency")
+	data=load_data("FP1-A2frequency10")
+	data2=load_data("CZ-A1frequency10")
+	data3=load_data("FP2-A1frequency10")
+	data4=load_data("CZ2-A1frequency10")
+	data5=load_data("O1-A2frequency10")
+	data6=load_data("O2-A1frequency10")
 	training_data=[]
 	test_data=[]
 	training_label=[]
 	test_label=[]
 	for i in range(int(len(data)/100*percentage_training)):
-		training_data.append([data[i][0][np.argmax(data[i][0])],np.argmax(data[i][0])])
-		training_label.append(data[i][1])
+		training_data.append([data[i][0],data[i][1]])
+		training_label.append(data[i][2])
 	for k in range(int(len(data)/100*percentage_training)):
-		training_data.append([data2[k][0][np.argmax(data2[k][0])],np.argmax(data2[k][0])])
-		training_label.append(data2[k][1])
+		training_data.append([data2[k][0],data2[k][1]])
+		training_label.append(data2[k][2])
 	for l in range(int(len(data)/100*percentage_training)):
-		training_data.append([data3[l][0][np.argmax(data3[l][0])],np.argmax(data3[l][0])])
-		training_label.append(data3[l][1])
+		training_data.append([data3[l][0],data3[l][1]])
+		training_label.append(data3[l][2])
 	for m in range(int(len(data)/100*percentage_training)):
-		training_data.append([data4[m][0][np.argmax(data4[m][0])],np.argmax(data4[m][0])])
-		training_label.append(data4[m][1])
+		training_data.append([data4[m][0],data4[m][1]])
+		training_label.append(data4[m][2])
 	for n in range(int(len(data)/100*percentage_training)):
-		training_data.append([data5[n][0][np.argmax(data5[n][0])],np.argmax(data5[n][0])])
-		training_label.append(data5[n][1])
+		training_data.append([data5[n][0],data5[n][1]])
+		training_label.append(data5[n][2])
 	for o in range(int(len(data)/100*percentage_training)):
-		training_data.append([data6[o][0][np.argmax(data6[o][0])],np.argmax(data6[o][0])])
-		training_label.append(data6[o][1])
+		training_data.append([data6[o][0],data6[o][1]])
+		training_label.append(data6[o][2])
 
 	for p  in range(int(len(data)/100*percentage_training+1),len(data)):	
-		test_data.append([data[p][0][np.argmax(data[p][0])],np.argmax(data[p][0])])
-		test_label.append(data[p][1])
+		test_data.append([data[p][0],data[p][1]])
+		test_label.append(data[p][2])
 	for r in range(int(len(data)/100*percentage_training+1),len(data)):	
-		test_data.append([data2[r][0][np.argmax(data2[r][0])],np.argmax(data2[r][0])])
-		test_label.append(data2[r][1])
+		test_data.append([data2[r][0],data2[r][1]])
+		test_label.append(data2[r][2])
 	for s in range(int(len(data)/100*percentage_training+1),len(data)):	
-		test_data.append([data3[s][0][np.argmax(data3[s][0])],np.argmax(data3[s][0])])
-		test_label.append(data3[s][1])
+		test_data.append([data3[s][0],data3[s][1]])
+		test_label.append(data3[s][2])
 	for t in range(int(len(data)/100*percentage_training+1),len(data)):	
-		test_data.append([data4[t][0][np.argmax(data4[t][0])],np.argmax(data4[t][0])])
-		test_label.append(data4[t][1])
+		test_data.append([data4[t][0],data4[t][1]])
+		test_label.append(data4[t][2])
 	for u in range(int(len(data)/100*percentage_training+1),len(data)):	
-		test_data.append([data5[u][0][np.argmax(data5[u][0])],np.argmax(data5[u][0])])
-		test_label.append(data5[u][1])
+		test_data.append([data5[u][0],data5[u][1]])
+		test_label.append(data5[u][2])
 	for v in range(int(len(data)/100*percentage_training+1),len(data)):	
-		test_data.append([data6[v][0][np.argmax(data6[v][0])],np.argmax(data6[v][0])])
-		test_label.append(data6[v][1])
+		test_data.append([data6[v][0],data6[v][1]])
+		test_label.append(data6[v][2])
 
 	training_data=np.asarray(training_data)
 	training_label=np.asarray(training_label)
